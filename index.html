@@ -48,6 +48,8 @@
             background-color: #121212;
             color: #F7F5F0;
             -webkit-tap-highlight-color: transparent;
+            /* Prevent pull-to-refresh on mobile */
+            overscroll-behavior-y: none;
         }
         
         /* Custom Scrollbar */
@@ -367,7 +369,7 @@
 
             if (showSplash) {
                 return (
-                    <div className="h-screen w-full bg-deep-black flex flex-col items-center justify-center relative overflow-hidden">
+                    <div className="fixed inset-0 w-full bg-deep-black flex flex-col items-center justify-center relative overflow-hidden z-[100]">
                         <div className="absolute inset-0 bg-dark-pattern opacity-50"></div>
                         <div className="z-10 text-center animate-pulse">
                             <Award size={64} className="text-imperial-gold mx-auto mb-4" />
@@ -381,9 +383,10 @@
             }
 
             return (
-                <div className="flex flex-col h-screen max-w-md mx-auto bg-deep-black shadow-2xl overflow-hidden border-x border-gray-800 relative">
+                // UPDATED: Use fixed inset-0 to prevent viewport jumping on mobile
+                <div className="fixed inset-0 w-full max-w-md mx-auto bg-deep-black shadow-2xl overflow-hidden border-x border-gray-800 flex flex-col">
                     {/* Top Status Bar with Lang Toggle */}
-                    <div className="h-14 w-full bg-deep-black/90 backdrop-blur-sm z-50 flex items-center justify-between px-4 absolute top-0 left-0 border-b border-white/5">
+                    <div className="h-14 shrink-0 w-full bg-deep-black/90 backdrop-blur-sm z-50 flex items-center justify-between px-4 border-b border-white/5 relative">
                         <div className="text-imperial-gold font-serif text-sm font-bold tracking-widest">{t.appName}</div>
                         <button 
                             onClick={toggleLang}
@@ -395,12 +398,12 @@
                     </div>
 
                     {/* Main Content Area */}
-                    <main className="flex-1 overflow-y-auto no-scrollbar pb-20 pt-14 page-enter bg-dark-pattern">
+                    <main className="flex-1 overflow-y-auto no-scrollbar pb-20 bg-dark-pattern relative">
                         {renderContent()}
                     </main>
 
                     {/* Bottom Navigation */}
-                    <nav className="absolute bottom-0 w-full bg-charcoal/95 backdrop-blur-md border-t border-white/10 flex justify-around items-center py-3 pb-6 z-50 px-2">
+                    <nav className="absolute bottom-0 w-full bg-charcoal/95 backdrop-blur-md border-t border-white/10 flex justify-around items-center py-3 pb-safe z-50 px-2 h-20">
                         <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={NavIcons.Home} label={t.nav.home} />
                         <NavButton active={activeTab === 'products'} onClick={() => setActiveTab('products')} icon={NavIcons.Products} label={t.nav.products} />
                         <NavButton active={activeTab === 'about'} onClick={() => setActiveTab('about')} icon={NavIcons.About} label={t.nav.about} />
@@ -435,7 +438,7 @@
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-deep-black via-deep-black/20 to-black/30"></div>
                     
-                    <div className="absolute top-6 right-6 mt-12">
+                    <div className="absolute top-6 right-6 mt-4">
                         <div className="w-8 h-16 border border-imperial-gold/30 rounded-full flex items-center justify-center animate-bounce">
                             <div className="w-1 h-2 bg-imperial-gold rounded-full"></div>
                         </div>
@@ -585,10 +588,11 @@
                     </div>
 
                     {selectedProduct && (
-                        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-0">
-                            <div className="bg-charcoal w-full max-w-sm rounded-lg overflow-hidden shadow-2xl animate-fadeIn relative border border-imperial-gold/30">
+                        // UPDATED: Modal layout to prevent stuck scrolling
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+                            <div className="bg-charcoal w-full max-w-sm rounded-lg overflow-hidden shadow-2xl relative border border-imperial-gold/30 max-h-[85vh] overflow-y-auto">
                                 <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 bg-black/50 p-2 rounded-full text-white hover:bg-black/80 backdrop-blur-sm"><X size={20} /></button>
-                                <div className="h-80 w-full relative">
+                                <div className="h-80 w-full relative shrink-0">
                                     <img src={selectedProduct.image} className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-charcoal to-transparent"></div>
                                 </div>
@@ -661,12 +665,10 @@
         );
 
         const ContactPage = ({ t, lang }) => (
-            // FIX: Removed h-full to allow scrolling, added min-h-full to ensure background coverage
             <div className="pt-8 px-6 pb-24 min-h-full flex flex-col">
                 <h2 className="text-2xl font-serif text-white mb-6">{t.contact.header}<span className="text-gold-gradient">{t.contact.headerSpan}</span></h2>
                 <p className="text-gray-500 text-xs mb-8">{t.contact.subHeader}</p>
                 
-                {/* FIX: Removed flex-1 and overflow-hidden, removed absolute positioning for gold circle to prevent layout issues */}
                 <div className="bg-charcoal rounded-xl p-6 border border-white/5 shadow-lg mb-6 relative">
                     <div className="absolute top-0 right-0 w-20 h-20 bg-imperial-gold/5 rounded-bl-full pointer-events-none"></div>
                     <div className="space-y-8 relative z-10">
@@ -695,9 +697,7 @@
                         </div>
                     </div>
                     
-                    {/* Embedded Google Map */}
                     <div className="mt-8 pt-6 border-t border-white/10">
-                        {/* Increased height slightly for better visibility */}
                         <div className="w-full h-64 rounded-lg overflow-hidden border border-white/10 mb-3 grayscale hover:grayscale-0 transition-all duration-500 relative z-10">
                              <iframe 
                                 width="100%" 

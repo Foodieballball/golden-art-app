@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>香港金藝盛工藝制作有限公司</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Google Fonts: Noto Serif TC (for luxury feel) and Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'imperial-gold': '#C5A059',
+                        'imperial-gold-light': '#E5C585',
+                        'imperial-red': '#681218',
+                        'deep-black': '#121212',
+                        'charcoal': '#1E1E1E',
+                        'paper': '#F7F5F0',
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        serif: ['"Noto Serif TC"', 'serif'],
+                    },
+                    backgroundImage: {
+                        'gold-gradient': 'linear-gradient(135deg, #C5A059 0%, #E5C585 50%, #B08D55 100%)',
+                        'dark-pattern': 'radial-gradient(circle at 50% 50%, #1E1E1E 0%, #121212 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #121212;
+            color: #F7F5F0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* Gold Text Effect */
+        .text-gold-gradient {
+            background: linear-gradient(to right, #C5A059, #F2D088, #C5A059);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: shine 5s linear infinite;
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        /* Hide scrollbar for category list */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* App-like transitions */
+        .page-enter {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- Translations Dictionary ---
+        const TRANSLATIONS = {
+            zh: {
+                appName: "香港金藝盛",
+                subTitle: "Golden Art Collection",
+                tagline: "宮廷瓷藝 · 銅鎏金 · 奢華擺件",
+                nav: {
+                    home: "府邸",
+                    products: "藏品",
+                    about: "品牌",
+                    contact: "鑑賞"
+                },
+                home: {
+                    since: "Royal Collection",
+                    title1: "傳世",
+                    title2: "奢華",
+                    title3: "府邸藝術",
+                    desc: "專營宮廷瓷藝、銅鎏金擺件。為您的豪宅注入皇室氣派與文化底蘊。",
+                    cta: "鑒賞藏品",
+                    features: {
+                        f1: { t: "宮廷工藝", d: "景泰藍/銅鎏金" },
+                        f2: { t: "百年傳承", d: "經典復刻藝術" },
+                        f3: { t: "豪宅陳設", d: "專業軟裝搭配" },
+                        f4: { t: "收藏證書", d: "正品信譽保證" }
+                    },
+                    banner: {
+                        title: "私人藝術顧問",
+                        desc: "為您的空間提供專業的藝術品陳設方案",
+                        btn: "預約鑑賞"
+                    }
+                },
+                products: {
+                    header: "典藏",
+                    headerSpan: "瑰寶",
+                    subHeader: "精選宮廷瓷藝與西洋銅雕",
+                    detailBtn: "詳情",
+                    handmade: "手工製作",
+                    unique: "獨一無二",
+                    cert: "收藏證書",
+                    callBtn: "致電查詢收藏",
+                    cats: ["全部", "宮廷瓷藝", "銅鎏金", "景泰藍", "水晶銅雕", "歐式擺件"]
+                },
+                about: {
+                    header: "品牌故事",
+                    story1: "植根香港六十載，金藝盛從傳統金飾工藝起家，逐步發展成為頂級家居藝術品專家。我們專注於搜羅與創作宮廷級瓷藝、銅鎏金擺件及景泰藍工藝品。",
+                    story2: "每一件藏品都代表著對極致工藝的追求，旨在為您的府邸增添一抹不凡的東方神韻與歐式奢華。",
+                    focusHeader: "我們專注於",
+                    focus: [
+                        {t: '宮廷瓷藝復刻', d: '重現清宮粉彩與琺瑯彩的輝煌'},
+                        {t: '銅鎏金裝飾', d: '融合中西美學的奢華點綴'},
+                        {t: '私人陳設顧問', d: '量身打造豪宅藝術氛圍'}
+                    ]
+                },
+                contact: {
+                    header: "預約",
+                    headerSpan: "鑑賞",
+                    subHeader: "歡迎親臨陳列室，近距離感受藝術品的細節",
+                    phoneTitle: "鑑賞專線",
+                    clickCall: "點擊立即撥打",
+                    addressTitle: "陳列室地址",
+                    address: "香港 上環 金日集團中心",
+                    timeTitle: "開放時間",
+                    time: "週一至週五: 09:30 - 18:30",
+                    timeNote: "週末及公眾假期請提前預約",
+                    mapBtn: "在 Google Maps 查看導航",
+                    footer: "© 2023 香港金藝盛工藝制作有限公司"
+                }
+            },
+            en: {
+                appName: "Golden Art HK",
+                subTitle: "Golden Art Collection",
+                tagline: "Imperial Porcelain · Ormolu · Luxury Decor",
+                nav: {
+                    home: "Home",
+                    products: "Gallery",
+                    about: "About",
+                    contact: "Visit"
+                },
+                home: {
+                    since: "Royal Collection",
+                    title1: "Timeless",
+                    title2: "Luxury",
+                    title3: "Art of Living",
+                    desc: "Specializing in Imperial Porcelain and Ormolu. Infusing royal elegance into your luxury home.",
+                    cta: "View Collection",
+                    features: {
+                        f1: { t: "Royal Craft", d: "Cloisonné / Ormolu" },
+                        f2: { t: "Heritage", d: "Classic Reproduction" },
+                        f3: { t: "Luxury Decor", d: "Interior Styling" },
+                        f4: { t: "Certified", d: "Authenticity Guaranteed" }
+                    },
+                    banner: {
+                        title: "Art Consultant",
+                        desc: "Professional art display solutions for your space.",
+                        btn: "Book Appointment"
+                    }
+                },
+                products: {
+                    header: "Our",
+                    headerSpan: "Treasures",
+                    subHeader: "Curated Imperial Porcelain & Western Bronze",
+                    detailBtn: "Details",
+                    handmade: "Handmade",
+                    unique: "Unique",
+                    cert: "Certified",
+                    callBtn: "Inquire Now",
+                    cats: ["All", "Porcelain", "Ormolu", "Cloisonné", "Crystal", "Decor"]
+                },
+                about: {
+                    header: "Brand Story",
+                    story1: "Rooted in Hong Kong for 60 years, Golden Art evolved from traditional gold craftsmanship to expert purveyors of fine home decor. We specialize in Imperial Porcelain, Ormolu, and Cloisonné.",
+                    story2: "Each piece represents the pursuit of ultimate craftsmanship, adding a touch of Oriental charm and European luxury to your residence.",
+                    focusHeader: "We Specialize In",
+                    focus: [
+                        {t: 'Porcelain Reproduction', d: 'Reviving Qing Dynasty glory'},
+                        {t: 'Ormolu Decoration', d: 'Fusion of East & West aesthetics'},
+                        {t: 'Art Consultancy', d: 'Tailored luxury atmosphere'}
+                    ]
+                },
+                contact: {
+                    header: "Book a",
+                    headerSpan: "Visit",
+                    subHeader: "Visit our showroom to experience the details up close.",
+                    phoneTitle: "Inquiry Hotline",
+                    clickCall: "Tap to call",
+                    addressTitle: "Showroom Address",
+                    address: "Golden Sun Centre, Sheung Wan, HK",
+                    timeTitle: "Opening Hours",
+                    time: "Mon - Fri: 09:30 - 18:30",
+                    timeNote: "Weekends & Holidays by appointment",
+                    mapBtn: "Open in Google Maps",
+                    footer: "© 2023 Hong Kong Golden Art Co. Ltd."
+                }
+            }
+        };
+
+        // --- Custom Icons Components ---
+        const Icon = ({ size = 24, className = "", children, ...props }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+                {...props}
+            >
+                {children}
+            </svg>
+        );
+
+        const Home = (props) => <Icon {...props}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></Icon>;
+        const Grid = (props) => <Icon {...props}><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></Icon>;
+        const Phone = (props) => <Icon {...props}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></Icon>;
+        const Award = (props) => <Icon {...props}><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></Icon>;
+        const MapPin = (props) => <Icon {...props}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></Icon>;
+        const ChevronRight = (props) => <Icon {...props}><polyline points="9 18 15 12 9 6"></polyline></Icon>;
+        const Star = (props) => <Icon {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></Icon>;
+        const Clock = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></Icon>;
+        const User = (props) => <Icon {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></Icon>;
+        const X = (props) => <Icon {...props}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></Icon>;
+        const Globe = (props) => <Icon {...props}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></Icon>;
+
+
+        // --- Data: Updated with New Products based on User Uploads ---
+        const PRODUCTS = [
+            { 
+                id: 1, 
+                category_zh: "宮廷瓷藝", category_en: "Porcelain",
+                title_zh: "粉彩描金吉象馱寶瓶", title_en: "Famille Rose Elephant Vase",
+                price: "HK$ 38,800", 
+                image: "https://github.com/Foodieballball/golden-art-app/blob/main/images/2.jpg?raw=true", 
+                desc_zh: "【鎮店之寶】寓意「太平有象」。精緻粉彩瓷胎，繪有皇家紋飾，底座採用精工銅鎏金工藝，象徵國家昌盛與家族繁榮。", 
+                desc_en: "Famille Rose porcelain featuring royal patterns with Ormolu base. Represents 'Peace and Prosperity'. A masterpiece for collectors."
+            },
+            { 
+                id: 2, 
+                category_zh: "宮廷瓷藝", category_en: "Porcelain",
+                title_zh: "法國Sèvres風格銅鎏金首飾盒", title_en: "Sèvres Style Porcelain Jewelry Box",
+                price: "HK$ 16,800", 
+                image: "https://github.com/Foodieballball/golden-art-app/blob/main/images/images/1.jpg?raw=true", 
+                desc_zh: "精美絕倫的法國Sèvres風格瓷器首飾盒，配以精工銅鎏金底座與蓋鈕。金彩手繪紋飾繁複華麗，盡顯路易十五時期宮廷奢華風範，適合收藏珍貴珠寶。",
+                desc_en: "Exquisite Sèvres-style porcelain jewelry box featuring intricate hand-painted gold details and fine Ormolu mounts. A perfect display of Louis XV court luxury."
+            },
+            { 
+                // Replaced "景泰藍駿馬" with New Image 1 (Blue Vases)
+                id: 3, 
+                category_zh: "宮廷瓷藝", category_en: "Porcelain",
+                title_zh: "藍釉描金開光銅鎏金蓋瓶 (一對)", title_en: "Pair of Blue Glaze Ormolu-Mounted Vases with Lids",
+                price: "HK$ 68,000", 
+                image: "https://github.com/Foodieballball/golden-art-app/blob/main/images/3.jpg?raw=true", 
+                desc_zh: "宏偉的藍釉瓷器，配以精緻的銅鎏金底座、手柄與蓋鈕。瓶身開光處繪有細膩的古典場景，盡顯皇家氣派，適合大型空間陳設。", 
+                desc_en: "Magnificent blue glazed porcelain vases featuring elaborate ormolu mounts, handles, and lids. Painted scenes within cartouches add a touch of classical grandeur. Perfect for large-scale display."
+            },
+            { 
+                // Replaced "銅雕大理石座鐘" with New Image 2 (Ormolu Clock)
+                id: 4, 
+                category_zh: "歐式擺件", category_en: "Decor",
+                title_zh: "路易十五風格銅鎏金天使座鐘", title_en: "Louis XV Style Ormolu Cherub Mantel Clock",
+                price: "HK$ 45,000", 
+                image: "https://github.com/Foodieballball/golden-art-app/blob/main/images/3.jpg?raw=true", 
+                desc_zh: "極具動態感的路易十五洛可可風格座鐘，通體採用精湛的銅鎏金工藝。多位小天使（Putti）嬉戲於花卉與渦卷紋飾間，工藝繁複，富麗堂皇。", 
+                desc_en: "A dynamic Louis XV Rococo style mantel clock executed in fine ormolu. Featuring playful cherubs amidst elaborate floral and scroll motifs. Richly decorated and opulent."
+            },
+            { 
+                // UPDATE: Replaced "藍地金花銅鎏金細頸瓶" with "灑金藍釉銅鎏金雙耳大甕" based on user request and image
+                id: 5, 
+                category_zh: "宮廷瓷藝", category_en: "Porcelain",
+                title_zh: "灑金藍釉銅鎏金雙耳大甕", title_en: "Gold-Splashed Blue Glaze Ormolu-Mounted Urn",
+                price: "HK$ 58,000", 
+                image: "https://github.com/Foodieballball/golden-art-app/blob/main/images/3.jpg?raw=true", 
+                desc_zh: "宏偉的灑金藍釉瓷器（仿青金石質感），配以精緻的銅鎏金人面雙耳與獸足底座。釉色深邃如星空，金彩點綴其間，展現出路易十六時期的古典主義風格，氣勢非凡。", 
+                desc_en: "Magnificent gold-splashed blue glaze porcelain urn (simulating Lapis Lazuli). Features intricate ormolu mask handles and beast feet base. The deep blue glaze resembles a starry night, showcasing Louis XVI neoclassical style."
+            },
+            { 
+                // Replaced "手繪描金孔雀果盤" with New Image 4 (Large Cloisonne Bowl)
+                id: 6, 
+                category_zh: "景泰藍", category_en: "Cloisonné",
+                title_zh: "景泰藍銅鎏金雙龍耳大碗", title_en: "Large Cloisonné Enamel Bowl with Ormolu Dragon Handles",
+                price: "HK$ 52,000", 
+                image: "https://github.com/Foodieballball/golden-art-app/blob/main/images/3.jpg?raw=true", 
+                desc_zh: "碩大的景泰藍工藝大碗，通體飾以綠松石色琺瑯釉及繁複紋飾。兩側配有威猛的銅鎏金雙龍耳及獸足底座，氣勢磅礴，是極佳的廳堂主景。", 
+                desc_en: "A massive cloisonné enamel bowl decorated in turquoise glaze and intricate patterns. Flanked by powerful ormolu dragon handles and beast feet. A majestic centerpiece for a grand hall."
+            },
+        ];
+
+        // Nav Icons map
+        const NavIcons = {
+            Home: <Home size={24} />,
+            Products: <Grid size={24} />,
+            Contact: <Phone size={24} />,
+            About: <User size={24} />
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('home');
+            const [showSplash, setShowSplash] = useState(true);
+            const [lang, setLang] = useState('zh'); // 'zh' or 'en'
+            
+            const t = TRANSLATIONS[lang]; // Current translation
+
+            // Splash Screen Effect
+            useEffect(() => {
+                const timer = setTimeout(() => setShowSplash(false), 2500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            const toggleLang = () => setLang(prev => prev === 'zh' ? 'en' : 'zh');
+
+            const renderContent = () => {
+                switch (activeTab) {
+                    case 'home': return <HomePage onNavigate={setActiveTab} t={t} lang={lang} />;
+                    case 'products': return <ProductPage t={t} lang={lang} />;
+                    case 'contact': return <ContactPage t={t} lang={lang} />;
+                    case 'about': return <AboutPage t={t} lang={lang} />;
+                    default: return <HomePage onNavigate={setActiveTab} t={t} lang={lang} />;
+                }
+            };
+
+            if (showSplash) {
+                return (
+                    <div className="h-screen w-full bg-deep-black flex flex-col items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-dark-pattern opacity-50"></div>
+                        <div className="z-10 text-center animate-pulse">
+                            <Award size={64} className="text-imperial-gold mx-auto mb-4" />
+                            <h1 className="text-3xl font-serif font-bold text-imperial-gold tracking-widest mb-2">{TRANSLATIONS.zh.appName}</h1>
+                            <p className="text-sm text-gray-400 tracking-[0.3em] uppercase">{TRANSLATIONS.zh.subTitle}</p>
+                            <div className="mt-8 w-16 h-0.5 bg-imperial-gold mx-auto"></div>
+                            <p className="mt-4 text-xs text-gray-500">{TRANSLATIONS.zh.tagline}</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="flex flex-col h-screen max-w-md mx-auto bg-deep-black shadow-2xl overflow-hidden border-x border-gray-800 relative">
+                    {/* Top Status Bar with Lang Toggle */}
+                    <div className="h-14 w-full bg-deep-black/90 backdrop-blur-sm z-50 flex items-center justify-between px-4 absolute top-0 left-0 border-b border-white/5">
+                        <div className="text-imperial-gold font-serif text-sm font-bold tracking-widest">{t.appName}</div>
+                        <button 
+                            onClick={toggleLang}
+                            className="flex items-center gap-1 px-3 py-1 rounded-full border border-imperial-gold/30 text-imperial-gold text-xs hover:bg-imperial-gold/10 transition-colors"
+                        >
+                            <Globe size={12} />
+                            {lang === 'zh' ? 'EN' : '中'}
+                        </button>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <main className="flex-1 overflow-y-auto no-scrollbar pb-20 pt-14 page-enter bg-dark-pattern">
+                        {renderContent()}
+                    </main>
+
+                    {/* Bottom Navigation */}
+                    <nav className="absolute bottom-0 w-full bg-charcoal/95 backdrop-blur-md border-t border-white/10 flex justify-around items-center py-3 pb-6 z-50 px-2">
+                        <NavButton active={activeTab === 'home'} onClick={() => setActiveTab('home')} icon={NavIcons.Home} label={t.nav.home} />
+                        <NavButton active={activeTab === 'products'} onClick={() => setActiveTab('products')} icon={NavIcons.Products} label={t.nav.products} />
+                        <NavButton active={activeTab === 'about'} onClick={() => setActiveTab('about')} icon={NavIcons.About} label={t.nav.about} />
+                        <NavButton active={activeTab === 'contact'} onClick={() => setActiveTab('contact')} icon={NavIcons.Contact} label={t.nav.contact} />
+                    </nav>
+                </div>
+            );
+        };
+
+        const NavButton = ({ active, onClick, icon, label }) => (
+            <button 
+                onClick={onClick}
+                className={`flex flex-col items-center justify-center w-16 transition-all duration-300 ${active ? 'text-imperial-gold transform -translate-y-1' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+                <div className={`${active ? 'scale-110 drop-shadow-[0_0_8px_rgba(197,160,89,0.3)]' : ''} transition-transform duration-300`}>
+                    {icon}
+                </div>
+                <span className={`text-[10px] mt-1 font-medium tracking-wide ${active ? 'opacity-100' : 'opacity-70'}`}>{label}</span>
+            </button>
+        );
+
+        // --- Pages ---
+
+        const HomePage = ({ onNavigate, t, lang }) => (
+            <div className="flex flex-col">
+                {/* Hero Section */}
+                <div className="relative h-[420px] w-full overflow-hidden">
+                    <img 
+                        src="https://github.com/Foodieballball/golden-art-app/blob/main/images/demo1.jpg?raw=true" 
+                        className="w-full h-full object-cover opacity-70"
+                        alt="Luxury Home Decor"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-deep-black via-deep-black/20 to-black/30"></div>
+                    
+                    <div className="absolute top-6 right-6 mt-12">
+                        <div className="w-8 h-16 border border-imperial-gold/30 rounded-full flex items-center justify-center animate-bounce">
+                            <div className="w-1 h-2 bg-imperial-gold rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 p-8 w-full">
+                        <div className="flex items-center space-x-2 mb-4">
+                            <span className="h-px w-8 bg-imperial-gold"></span>
+                            <span className="text-imperial-gold text-xs tracking-[0.2em] uppercase">{t.home.since}</span>
+                        </div>
+                        <h2 className="text-4xl font-serif font-bold text-white mb-3 leading-tight drop-shadow-lg">
+                            {t.home.title1}<span className="text-gold-gradient">{t.home.title2}</span><br/>{t.home.title3}
+                        </h2>
+                        <p className="text-gray-200 text-sm mb-8 font-light tracking-wide drop-shadow-md">
+                            {t.home.desc}
+                        </p>
+                        <button 
+                            onClick={() => onNavigate('products')}
+                            className="bg-imperial-gold text-deep-black px-8 py-3.5 rounded-sm font-bold text-sm hover:bg-white transition-colors flex items-center shadow-[0_0_20px_rgba(197,160,89,0.4)]"
+                        >
+                            {t.home.cta} <ChevronRight size={16} className="ml-2" />
+                        </button>
+                    </div>
+                </div>
+
+                {/* Features Grid */}
+                <div className="p-6 grid grid-cols-2 gap-4 -mt-6 relative z-10">
+                    <FeatureCard icon={<Award size={24}/>} title={t.home.features.f1.t} desc={t.home.features.f1.d} />
+                    <FeatureCard icon={<Clock size={24}/>} title={t.home.features.f2.t} desc={t.home.features.f2.d} />
+                    <FeatureCard icon={<Star size={24}/>} title={t.home.features.f3.t} desc={t.home.features.f3.d} />
+                    <FeatureCard icon={<User size={24}/>} title={t.home.features.f4.t} desc={t.home.features.f4.d} />
+                </div>
+
+                {/* Call to Action Banner */}
+                <div className="mx-4 mb-8 relative rounded-lg p-6 overflow-hidden shadow-[0_4px_15px_rgba(197,160,89,0.4)] border border-[#F2D088]">
+                    <div className="absolute inset-0 bg-gold-gradient"></div>
+                    <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'repeating-linear-gradient(90deg, #000 0px, #000 1px, transparent 1px, transparent 3px)'}}></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-white/20"></div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-xl font-serif font-bold text-deep-black">{t.home.banner.title}</h3>
+                            <div className="bg-deep-black/10 p-1 rounded-full"><Star size={14} className="text-deep-black" fill="currentColor" /></div>
+                        </div>
+                        <p className="text-deep-black/80 text-xs mb-5 font-medium border-l-2 border-deep-black/30 pl-2">{t.home.banner.desc}</p>
+                        <button onClick={() => onNavigate('contact')} className="group flex items-center bg-deep-black text-imperial-gold px-5 py-2.5 rounded-sm text-xs font-bold tracking-widest hover:bg-charcoal transition-all shadow-md">
+                            {t.home.banner.btn}
+                            <ChevronRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+                    <Award className="absolute -bottom-4 -right-4 text-white/30 w-32 h-32 rotate-[-10deg]" />
+                </div>
+            </div>
+        );
+
+        const FeatureCard = ({ icon, title, desc }) => (
+            <div className="bg-charcoal/90 backdrop-blur-md p-4 rounded-lg border border-white/5 hover:border-imperial-gold/50 transition-colors group shadow-lg">
+                <div className="text-imperial-gold mb-3 group-hover:scale-110 transition-transform">{icon}</div>
+                <h4 className="text-white font-medium text-sm mb-1">{title}</h4>
+                <p className="text-gray-500 text-xs">{desc}</p>
+            </div>
+        );
+
+        const ProductPage = ({ t, lang }) => {
+            const [selectedCat, setSelectedCat] = useState("All");
+            const [selectedProduct, setSelectedProduct] = useState(null);
+
+            // Map categories based on language for filtering logic
+            // We use index to match categories since strings change
+            const catIndex = selectedCat === "All" ? 0 : t.products.cats.indexOf(selectedCat);
+            
+            const filteredProducts = selectedCat === "All" 
+                ? PRODUCTS 
+                : PRODUCTS.filter(p => {
+                    const pCat = lang === 'zh' ? p.category_zh : p.category_en;
+                    return pCat === t.products.cats[catIndex] || p.category_zh === selectedCat || p.category_en === selectedCat // Fallback
+                });
+
+            // Initialize categories on first load to current language
+            useEffect(() => {
+                setSelectedCat("All");
+            }, [lang]);
+
+            return (
+                <div className="pt-8 min-h-full">
+                    <div className="px-6 mb-6">
+                        <h2 className="text-2xl font-serif text-white mb-1">{t.products.header}<span className="text-gold-gradient">{t.products.headerSpan}</span></h2>
+                        <p className="text-gray-500 text-xs">{t.products.subHeader}</p>
+                    </div>
+
+                    <div className="flex overflow-x-auto px-6 pb-4 mb-2 no-scrollbar gap-3">
+                        <button
+                            onClick={() => setSelectedCat("All")}
+                            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs transition-all border ${
+                                selectedCat === "All"
+                                ? 'bg-imperial-gold text-deep-black border-imperial-gold font-bold shadow-[0_0_10px_rgba(197,160,89,0.3)]' 
+                                : 'bg-transparent text-gray-400 border-gray-700 hover:border-gray-500'
+                            }`}
+                        >
+                            {t.products.cats[0]}
+                        </button>
+                        {/* Skip first element "All" in map since we handled it above */}
+                        {t.products.cats.slice(1).map((cat, i) => (
+                            <button
+                                key={cat}
+                                onClick={() => setSelectedCat(cat)}
+                                className={`whitespace-nowrap px-4 py-2 rounded-full text-xs transition-all border ${
+                                    selectedCat === cat 
+                                    ? 'bg-imperial-gold text-deep-black border-imperial-gold font-bold shadow-[0_0_10px_rgba(197,160,89,0.3)]' 
+                                    : 'bg-transparent text-gray-400 border-gray-700 hover:border-gray-500'
+                                }`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 px-4 pb-24">
+                        {filteredProducts.map(product => (
+                            <div 
+                                key={product.id} 
+                                onClick={() => setSelectedProduct(product)}
+                                className="bg-charcoal rounded-none overflow-hidden border border-white/5 shadow-lg group active:scale-95 transition-transform duration-200"
+                            >
+                                <div className="aspect-[3/4] w-full overflow-hidden relative">
+                                    <img 
+                                        src={product.image} 
+                                        alt={lang === 'zh' ? product.title_zh : product.title_en} 
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                                    <div className="absolute bottom-3 left-3 right-3">
+                                         <div className="text-[10px] text-imperial-gold mb-1 tracking-wider uppercase">
+                                             {lang === 'zh' ? product.category_zh : product.category_en}
+                                         </div>
+                                         <h3 className="text-white text-sm font-medium leading-tight">
+                                             {lang === 'zh' ? product.title_zh : product.title_en}
+                                         </h3>
+                                    </div>
+                                </div>
+                                <div className="p-3 bg-[#181818] border-t border-white/5 flex justify-between items-center">
+                                    <p className="text-imperial-gold text-xs font-serif">{product.price}</p>
+                                    <span className="text-gray-500 text-[10px]">{t.products.detailBtn}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {selectedProduct && (
+                        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md p-4 sm:p-0">
+                            <div className="bg-charcoal w-full max-w-sm rounded-lg overflow-hidden shadow-2xl animate-fadeIn relative border border-imperial-gold/30">
+                                <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 bg-black/50 p-2 rounded-full text-white hover:bg-black/80 backdrop-blur-sm"><X size={20} /></button>
+                                <div className="h-80 w-full relative">
+                                    <img src={selectedProduct.image} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal to-transparent"></div>
+                                </div>
+                                <div className="p-8 -mt-12 relative z-20">
+                                    <div className="mb-6">
+                                        <span className="inline-block px-2 py-1 border border-imperial-gold/30 rounded text-[10px] text-imperial-gold mb-2 tracking-widest uppercase">
+                                            {lang === 'zh' ? selectedProduct.category_zh : selectedProduct.category_en}
+                                        </span>
+                                        <h3 className="text-2xl font-serif text-white mb-2 leading-tight">
+                                            {lang === 'zh' ? selectedProduct.title_zh : selectedProduct.title_en}
+                                        </h3>
+                                        <p className="text-xl font-serif text-gold-gradient">{selectedProduct.price}</p>
+                                    </div>
+                                    <div className="space-y-4 mb-8">
+                                        <p className="text-gray-300 text-sm leading-loose font-light border-l border-imperial-gold/30 pl-4">
+                                            {lang === 'zh' ? selectedProduct.desc_zh : selectedProduct.desc_en}
+                                        </p>
+                                        <div className="flex gap-2 text-[10px] text-gray-500 uppercase tracking-widest">
+                                            <span>• {t.products.handmade}</span>
+                                            <span>• {t.products.unique}</span>
+                                            <span>• {t.products.cert}</span>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <button className="col-span-1 border border-white/20 rounded flex items-center justify-center text-white hover:bg-white/5"><Star size={18} /></button>
+                                        <a href={`tel:23422877`} className="col-span-3 bg-imperial-gold text-deep-black text-center py-3 rounded font-bold text-sm hover:bg-white transition-colors flex items-center justify-center shadow-[0_0_15px_rgba(197,160,89,0.3)]">
+                                            <Phone size={16} className="mr-2" /> {t.products.callBtn}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const AboutPage = ({ t, lang }) => (
+            <div className="pt-8 px-6 pb-24">
+                <div className="text-center mb-10">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-imperial-gold to-yellow-700 rounded-full flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(197,160,89,0.2)]">
+                        <Award size={40} className="text-deep-black" />
+                    </div>
+                    <h2 className="text-2xl font-serif text-white mb-2">{t.appName}</h2>
+                    <p className="text-gray-500 text-xs tracking-[0.3em] uppercase">{t.subTitle}</p>
+                </div>
+                <div className="space-y-10">
+                    <section>
+                        <h3 className="text-white font-serif text-lg mb-4 flex items-center"><span className="w-8 h-px bg-imperial-gold mr-3"></span>{t.about.header}</h3>
+                        <p className="text-gray-400 text-sm leading-loose text-justify font-light">{t.about.story1}</p>
+                        <p className="text-gray-400 text-sm leading-loose text-justify mt-4 font-light">{t.about.story2}</p>
+                    </section>
+                    <section className="bg-[#181818] p-6 rounded-sm border-l-2 border-imperial-gold">
+                        <h3 className="text-imperial-gold font-medium mb-4 text-sm tracking-widest uppercase">{t.about.focusHeader}</h3>
+                        <ul className="space-y-4">
+                            {t.about.focus.map((item, i) => (
+                                <li key={i} className="flex flex-col">
+                                    <span className="text-white text-sm font-serif mb-1">{item.t}</span>
+                                    <span className="text-gray-600 text-xs">{item.d}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                    <div className="grid grid-cols-2 gap-4">
+                        <img src="https://images.unsplash.com/photo-1590422749842-45e0c6566088?q=80&w=400" className="rounded-sm opacity-80 hover:opacity-100 transition-opacity" alt="Craft" />
+                        <img src="https://images.unsplash.com/photo-1605646399047-9df03407e376?q=80&w=400" className="rounded-sm opacity-80 hover:opacity-100 transition-opacity" alt="Gold" />
+                    </div>
+                </div>
+            </div>
+        );
+
+        const ContactPage = ({ t, lang }) => (
+            // FIX: Removed h-full to allow scrolling, added min-h-full to ensure background coverage
+            <div className="pt-8 px-6 pb-24 min-h-full flex flex-col">
+                <h2 className="text-2xl font-serif text-white mb-6">{t.contact.header}<span className="text-gold-gradient">{t.contact.headerSpan}</span></h2>
+                <p className="text-gray-500 text-xs mb-8">{t.contact.subHeader}</p>
+                
+                {/* FIX: Removed flex-1 and overflow-hidden, removed absolute positioning for gold circle to prevent layout issues */}
+                <div className="bg-charcoal rounded-xl p-6 border border-white/5 shadow-lg mb-6 relative">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-imperial-gold/5 rounded-bl-full pointer-events-none"></div>
+                    <div className="space-y-8 relative z-10">
+                        <div className="flex items-start group cursor-pointer" onClick={() => window.open('tel:23422877')}>
+                            <div className="bg-imperial-gold/10 p-3 rounded-full text-imperial-gold mr-4 group-hover:bg-imperial-gold group-hover:text-black transition-colors"><Phone size={24} /></div>
+                            <div>
+                                <h4 className="text-gray-500 text-xs uppercase mb-1">{t.contact.phoneTitle}</h4>
+                                <p className="text-white text-lg font-medium tracking-wide">2342 2877</p>
+                                <p className="text-imperial-gold text-xs mt-1">{t.contact.clickCall}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <div className="bg-imperial-gold/10 p-3 rounded-full text-imperial-gold mr-4"><MapPin size={24} /></div>
+                            <div>
+                                <h4 className="text-gray-500 text-xs uppercase mb-1">{t.contact.addressTitle}</h4>
+                                <p className="text-white text-sm leading-relaxed">{t.contact.address}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start">
+                            <div className="bg-imperial-gold/10 p-3 rounded-full text-imperial-gold mr-4"><Clock size={24} /></div>
+                            <div>
+                                <h4 className="text-gray-500 text-xs uppercase mb-1">{t.contact.timeTitle}</h4>
+                                <p className="text-white text-sm">{t.contact.time}</p>
+                                <p className="text-gray-400 text-xs">{t.contact.timeNote}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Embedded Google Map */}
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                        {/* Increased height slightly for better visibility */}
+                        <div className="w-full h-64 rounded-lg overflow-hidden border border-white/10 mb-3 grayscale hover:grayscale-0 transition-all duration-500 relative z-10">
+                             <iframe 
+                                width="100%" 
+                                height="100%" 
+                                frameBorder="0" 
+                                scrolling="yes" 
+                                marginHeight="0" 
+                                marginWidth="0" 
+                                src="https://maps.google.com/maps?q=Golden+Sun+Centre,+Sheung+Wan&t=&z=17&ie=UTF8&iwloc=&output=embed"
+                                title="Google Map"
+                                className="pointer-events-auto"
+                            ></iframe>
+                        </div>
+                        <button onClick={() => window.open('https://goo.gl/maps/PlaceHolderLink')} className="w-full bg-white/5 border border-white/10 text-white py-3 rounded hover:bg-imperial-gold hover:text-black hover:border-imperial-gold transition-all text-sm flex items-center justify-center">
+                            <MapPin size={16} className="mr-2"/> {t.contact.mapBtn}
+                        </button>
+                    </div>
+                </div>
+                
+                <div className="text-center mt-auto">
+                    <p className="text-gray-600 text-xs">{t.contact.footer}</p>
+                </div>
+            </div>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
